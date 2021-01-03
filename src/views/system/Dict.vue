@@ -99,9 +99,22 @@ export default class Dict extends Vue {
         name: "",
         code: ""
     }
+
+    // 参数校验
+    validateCode: object = (rule: object, value: string, callback: (e?: string) => void) => {
+        if (this.dialogData.parentCode == "") {
+            if (value == "") {
+                callback("请输入编码")
+            } else {
+                callback()
+            }
+        } else {
+            callback()
+        }
+    }
     // 对话框校验
     dialogRules = {
-        code: [{ required: true, message: "请输入编码", trigger: "blur" }],
+        code: [{ validator: this.validateCode, trigger: "blur" }],
         name: [{ required: true, message: "请输入名称", trigger: "blur" }]
     }
 
@@ -260,10 +273,10 @@ export default class Dict extends Vue {
      * 对话框确定
      */
     dialogConfirm() {
+        this.dialogData.parentCode = this.parentCode
         ;(this.$refs["dialogForm"] as Form).validate((valid: boolean) => {
             if (valid) {
                 if (this.dialogData.id == 0) {
-                    this.dialogData.parentCode = this.parentCode
                     AxiosUtils.post("/dict", this.dialogData).then(() => {
                         this.$message.success(process.env.VUE_APP_SUCCESS_MESSAGE)
                         this.dialogClose()
@@ -286,6 +299,7 @@ export default class Dict extends Vue {
     goBack() {
         this.queryModel.parentCode = ""
         this.parentCode = ""
+        this.dialogData.parentCode = ""
         this.operationColumnWidth = this.getOperationColumnWidth()
         this.search(1)
     }
